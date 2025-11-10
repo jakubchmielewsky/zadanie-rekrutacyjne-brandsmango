@@ -1,7 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-const required = ["NODE_ENV", "PORT", "MONGO_URI", "DATABASE_PASSWORD"];
+const required = [
+  "NODE_ENV",
+  "PORT",
+  "MONGO_URI",
+  "DATABASE_PASSWORD",
+  "SYNC_INTERVAL_IN_MINUTES",
+];
 
 for (const key of required) {
   if (!process.env[key]) {
@@ -15,4 +21,5 @@ export const env = {
   PORT: Number(process.env.PORT),
   MONGO_URI: process.env.MONGO_URI!,
   DATABASE_PASSWORD: process.env.DATABASE_PASSWORD!,
+  SYNC_INTERVAL_IN_MINUTES: process.env.SYNC_INTERVAL_IN_MINUTES!,
 };

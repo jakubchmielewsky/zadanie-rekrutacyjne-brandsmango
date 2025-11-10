@@ -7,8 +7,13 @@ process.on("uncaughtException", (err) => {
 });
 
 import app from "./app";
+import { startOrdersSyncJob } from "./jobs/syncOrders.job";
+import { syncOrders } from "./features/orders/order.service";
 
-connectDB();
+connectDB().then(() => {
+  syncOrders();
+  startOrdersSyncJob();
+});
 
 const PORT = env.PORT || 3000;
 
