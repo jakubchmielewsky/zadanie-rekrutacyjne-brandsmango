@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { InferSchemaType } from "mongoose";
 
 const orderSchema = new mongoose.Schema({
   _id: String,
@@ -9,9 +9,10 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   totalWorth: { type: Number, required: true },
-  orderStatus: { type: String, required: true },
   orderChangeDate: { type: Date, required: true },
 });
+
+export type OrderDocument = InferSchemaType<typeof orderSchema>;
 
 const OrderModel = mongoose.model("Order", orderSchema);
 export default OrderModel;

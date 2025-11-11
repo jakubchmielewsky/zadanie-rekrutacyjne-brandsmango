@@ -1,6 +1,8 @@
-import OrderModel from "./order.model";
+import OrderModel, { OrderDocument } from "./order.model";
 import { APIOrder } from "../../types/APIOrder";
 import { toApiDateFormat } from "../../utils/toApiDateFormat";
+import { AsyncParser } from "@json2csv/node";
+import { FilterQuery } from "mongoose";
 
 const fetchOrders = async (
   resultsPage: number,
@@ -62,7 +64,6 @@ const saveOrUpdateOrders = async (orders: APIOrder[]) => {
   }));
 
   await OrderModel.bulkWrite(bulkOps);
-  console.log(`Synced ${orders.length} orders`);
 };
 
 export const syncOrders = async () => {
@@ -99,4 +100,39 @@ export const syncOrders = async () => {
   }
 
   console.log(`✅ Synced (${updatesInTotal} orders updated in total)`);
+};
+
+export const getOrders = async (filter: FilterQuery<OrderDocument>) => {
+  return await OrderModel.find(filter).select("-orderChangeDate").lean();
+};
+
+export const getOrdersAsCSV = async (filter: FilterQuery<OrderDocument>) => {
+  const cursor = await OrderModel.find(filter)
+    .lean()
+    .select("-orderChangeDate")
+    .cursor();
+
+  const parser = new AsyncParser({
+    fields: [
+      {
+        label: "Order ID",
+        value: (row: OrderDocument) => `"${row._id}"`,
+      },
+      {
+        label: "Total Worth",
+        value: (row: OrderDocument) => row.totalWorth,
+      },
+      {
+        label: "Products",
+        value: (row: OrderDocument) =>
+          `"${row.products.map((p) => `${p._id}:${p.quantity}`).join("; ")}"`,
+      },
+    ],
+  });
+
+  return parser.parse(cursor);
+};
+
+export const getOrderById = async (orderId: string) => {
+  return await OrderModel.findById(orderId).select("-orderChangeDate").lean();
 };

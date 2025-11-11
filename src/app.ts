@@ -10,6 +10,7 @@ import globalErrorHandler from "./middlewares/globalErrorHandler";
 import AppError from "./utils/AppError";
 import { env } from "./config/env";
 import { xss } from "express-xss-sanitizer";
+import ordersRouter from "./features/orders/order.router";
 
 const app = Express();
 
@@ -41,6 +42,8 @@ app.use("/", (req, res, next) => {
 });
 
 setupSwagger(app);
+
+app.use("/api/v1/orders", ordersRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
