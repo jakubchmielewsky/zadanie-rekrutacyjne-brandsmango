@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import AppError from "../utils/AppError";
 import { env } from "../config/env";
 
@@ -48,20 +48,25 @@ const sendErrorProduction = (err: any, req: Request, res: Response) => {
   }
 };
 
-const globalErrorHandler = (err: any, req: Request, res: Response) => {
+const globalErrorHandler = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   let errorCopy = { ...err };
   errorCopy.statusCode = err.statusCode || 500;
   errorCopy.status = err.status || "error";
   errorCopy.message = err.message || "Something went wrong!";
 
+  if (env.NODE_ENV === "development") {
+    return sendErrorDevelopment(errorCopy, req, res);
+  }
+
   if (err.code === 11000) errorCopy = handleDuplicateFieldsErrorDB(err);
   if (err.name === "ValidationError") errorCopy = handleValidationErrorDB(err);
   if (err.name === "CastError") errorCopy = handleCastErrorDB(err);
 
-  if (env.NODE_ENV === "development") {
-    console.log(err);
-    return sendErrorDevelopment(errorCopy, req, res);
-  }
   sendErrorProduction(errorCopy, req, res);
 };
 
