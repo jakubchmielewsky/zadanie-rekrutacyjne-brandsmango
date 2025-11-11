@@ -22,7 +22,7 @@ export const getOrders = catchAsync(async (req: Request, res: Response) => {
   }
 
   if (req.headers.accept === "text/csv") {
-    const csvStream = await OrderService.getOrdersAsCSV(filter);
+    const csvStream = OrderService.getOrdersAsCSV(filter);
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", "attachment; filename=orders.csv");

@@ -3,6 +3,7 @@ import { APIOrder } from "../../types/APIOrder";
 import { toApiDateFormat } from "../../utils/toApiDateFormat";
 import { AsyncParser } from "@json2csv/node";
 import { FilterQuery } from "mongoose";
+import { env } from "../../config/env";
 
 const fetchOrders = async (
   resultsPage: number,
@@ -15,8 +16,7 @@ const fetchOrders = async (
     {
       method: "POST",
       headers: {
-        "X-API-KEY":
-          "YXBwbGljYXRpb24xNjpYeHI1K0MrNVRaOXBaY2lEcnpiQzBETUZROUxrRzFFYXZuMkx2L0RHRXZRdXNkcmF5R0Y3ZnhDMW1nejlmVmZP",
+        "X-API-KEY": env.IDOSELL_API_KEY,
       },
 
       body: JSON.stringify({
@@ -106,8 +106,8 @@ export const getOrders = async (filter: FilterQuery<OrderDocument>) => {
   return await OrderModel.find(filter).select("-orderChangeDate").lean();
 };
 
-export const getOrdersAsCSV = async (filter: FilterQuery<OrderDocument>) => {
-  const cursor = await OrderModel.find(filter)
+export const getOrdersAsCSV = (filter: FilterQuery<OrderDocument>) => {
+  const cursor = OrderModel.find(filter)
     .lean()
     .select("-orderChangeDate")
     .cursor();
@@ -116,7 +116,7 @@ export const getOrdersAsCSV = async (filter: FilterQuery<OrderDocument>) => {
     fields: [
       {
         label: "Order ID",
-        value: (row: OrderDocument) => `"${row._id}"`,
+        value: (row: OrderDocument) => row._id,
       },
       {
         label: "Total Worth",
@@ -125,7 +125,7 @@ export const getOrdersAsCSV = async (filter: FilterQuery<OrderDocument>) => {
       {
         label: "Products",
         value: (row: OrderDocument) =>
-          `"${row.products.map((p) => `${p._id}:${p.quantity}`).join("; ")}"`,
+          row.products.map((p) => `${p._id}:${p.quantity}`).join("; "),
       },
     ],
   });

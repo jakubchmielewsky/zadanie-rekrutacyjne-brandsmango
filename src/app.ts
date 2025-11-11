@@ -41,9 +41,9 @@ app.use("/", (req, res, next) => {
   next();
 });
 
-setupSwagger(app);
-
 app.use("/api/v1/orders", ordersRouter);
+
+setupSwagger(app);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl}`, 404));
