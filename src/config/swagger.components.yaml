@@ -1,0 +1,73 @@
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: >
+        API key required to access protected endpoints.  
+        Provide it in the `x-api-key` header.
+
+  schemas:
+    Product:
+      type: object
+      description: Product item inside an order (simplified).
+      properties:
+        _id:
+          type: string
+          example: "2"
+        quantity:
+          type: integer
+          example: 12
+
+    Order:
+      type: object
+      required:
+        - _id
+        - totalWorth
+        - orderStatus
+        - orderChangeDate
+      properties:
+        _id:
+          type: string
+          example: "iaisystem-3"
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        totalWorth:
+          type: number
+          example: 2.56
+        orderStatus:
+          type: string
+          example: "new"
+
+    OrdersResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+
+    OrderResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        data:
+          $ref: "#/components/schemas/Order"
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Unauthorized"

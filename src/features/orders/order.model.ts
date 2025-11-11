@@ -9,6 +9,7 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   totalWorth: { type: Number, required: true },
+  orderStatus: { type: String, required: true },
   orderChangeDate: { type: Date, required: true },
 });
 

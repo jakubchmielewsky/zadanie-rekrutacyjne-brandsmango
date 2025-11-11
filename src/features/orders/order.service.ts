@@ -4,6 +4,7 @@ import { toApiDateFormat } from "../../utils/toApiDateFormat";
 import { AsyncParser } from "@json2csv/node";
 import { FilterQuery } from "mongoose";
 import { env } from "../../config/env";
+import AppError from "../../utils/AppError";
 
 const fetchOrders = async (
   resultsPage: number,
@@ -119,6 +120,10 @@ export const getOrdersAsCSV = (filter: FilterQuery<OrderDocument>) => {
         value: (row: OrderDocument) => row._id,
       },
       {
+        label: "Order Status",
+        value: (row: OrderDocument) => row.orderStatus,
+      },
+      {
         label: "Total Worth",
         value: (row: OrderDocument) => row.totalWorth,
       },
@@ -134,5 +139,11 @@ export const getOrdersAsCSV = (filter: FilterQuery<OrderDocument>) => {
 };
 
 export const getOrderById = async (orderId: string) => {
-  return await OrderModel.findById(orderId).select("-orderChangeDate").lean();
+  const order = await OrderModel.findById(orderId)
+    .select("-orderChangeDate")
+    .lean();
+
+  if (!order) throw new AppError("Order not found", 404);
+
+  return order;
 };
