@@ -9,6 +9,10 @@ export const getOrders = catchAsync(async (req: Request, res: Response) => {
 
   const filter: FilterQuery<OrderDocument> = {};
 
+  if (minWorth || maxWorth) {
+    filter.totalWorth = {};
+  }
+
   if (minWorth) {
     filter.totalWorth.$gte = Number(minWorth);
   }
