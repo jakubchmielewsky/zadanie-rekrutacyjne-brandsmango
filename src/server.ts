@@ -1,3 +1,5 @@
+import "./config/zod";
+import "./index.docs";
 import { env } from "./config/env";
 import { connectDB } from "./config/mongo";
 

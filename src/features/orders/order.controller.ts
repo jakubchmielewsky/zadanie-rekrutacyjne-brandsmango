@@ -3,22 +3,17 @@ import catchAsync from "../../utils/catchAsync";
 import * as OrderService from "./order.service";
 import { FilterQuery } from "mongoose";
 import { OrderDocument } from "./order.model";
+import { GetOrderByIdParamsSchema, GetOrdersQuerySchema } from "./order.types";
 
 export const getOrders = catchAsync(async (req: Request, res: Response) => {
-  const { minWorth, maxWorth } = req.query;
+  const { minWorth, maxWorth } = GetOrdersQuerySchema.parse(req.query);
 
   const filter: FilterQuery<OrderDocument> = {};
 
   if (minWorth || maxWorth) {
     filter.totalWorth = {};
-  }
-
-  if (minWorth) {
-    filter.totalWorth.$gte = Number(minWorth);
-  }
-
-  if (maxWorth) {
-    filter.totalWorth.$lte = Number(maxWorth);
+    if (minWorth) filter.totalWorth.$gte = minWorth;
+    if (maxWorth) filter.totalWorth.$lte = maxWorth;
   }
 
   if (req.headers.accept === "text/csv") {
@@ -31,14 +26,14 @@ export const getOrders = catchAsync(async (req: Request, res: Response) => {
   } else {
     const orders = await OrderService.getOrders(filter);
 
-    res.status(200).json({ status: "success", data: orders });
+    res.status(200).json(orders);
   }
 });
 
 export const getOrderById = catchAsync(async (req: Request, res: Response) => {
-  const { orderId } = req.params;
+  const { orderId } = GetOrderByIdParamsSchema.parse(req.params);
 
   const order = await OrderService.getOrderById(orderId);
 
-  res.status(200).json({ status: "success", data: order });
+  res.status(200).json(order);
 });

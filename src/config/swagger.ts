@@ -1,9 +1,12 @@
-import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
 import { env } from "./env";
+import { OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import { registry } from "./openapi";
 
-const swaggerDefinition = {
+export const generator = new OpenApiGeneratorV3(registry.definitions);
+
+export const openApiDoc = generator.generateDocument({
   openapi: "3.0.0",
   info: {
     title: "API Documentation",
@@ -15,33 +18,27 @@ const swaggerDefinition = {
       description: "Development server",
     },
   ],
-  components: {
-    securitySchemes: {
-      ApiKeyAuth: {
-        type: "apiKey",
-        in: "header",
-        name: "x-api-key",
-        description: "API key required to access protected endpoints.",
-      },
+});
+
+openApiDoc.components = {
+  securitySchemes: {
+    ApiKeyAuth: {
+      type: "apiKey",
+      in: "header",
+      name: "x-api-key",
+      description: "API key required to access protected endpoints.",
     },
   },
-  security: [
-    {
-      ApiKeyAuth: [],
-    },
-  ],
 };
 
-const swaggerOptions: swaggerJSDoc.Options = {
-  definition: swaggerDefinition,
-  apis: [
-    "./src/features/**/*.router.ts",
-    "./src/config/swagger.components.yaml",
-  ],
-};
-
-const swaggerSpec = swaggerJSDoc(swaggerOptions);
+openApiDoc.security = [
+  {
+    ApiKeyAuth: [],
+  },
+];
 
 export function setupSwagger(app: Express): void {
-  app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  if (env.NODE_ENV !== "production") {
+    app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openApiDoc));
+  }
 }
