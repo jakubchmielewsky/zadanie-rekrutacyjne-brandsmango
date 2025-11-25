@@ -1,19 +1,20 @@
-import "./config/zod";
-import "./index.docs";
-import { env } from "./config/env";
-import { connectDB } from "./config/mongo";
-
 process.on("uncaughtException", (err) => {
   console.error("💥 Uncaught exception:", err);
   process.exit(1);
 });
 
+import "./config/zod";
+import "./index.docs";
+import { env } from "./config/env";
+import { connectDB } from "./config/mongo";
 import app from "./app";
 import { startOrdersSyncJob } from "./jobs/syncOrders.job";
 import { syncOrders } from "./features/orders/order.service";
 
-connectDB().then(() => {
-  syncOrders();
+connectDB().then(async () => {
+  console.log("🔁 Started initial sync...");
+  await syncOrders();
+  console.log("✅ Completed initial sync");
   startOrdersSyncJob();
 });
 

@@ -6,38 +6,83 @@ import { FilterQuery } from "mongoose";
 import { env } from "../../config/env";
 import AppError from "../../utils/AppError";
 
+const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  retries = 5
+): Promise<T> => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const delay = Math.pow(2, i) * 1000;
+
+      console.error("Fetch attempt failed");
+
+      if (i === retries - 1) {
+        console.error("All fetch retries failed");
+        throw error;
+      }
+      await new Promise((res) => setTimeout(res, delay));
+    }
+  }
+  throw new Error("Unexpected retry logic exit");
+};
+
 const fetchOrders = async (
   resultsPage: number,
   resultsLimit: number,
   dateBegin: string,
-  dateType: "add" | "modified"
-) => {
-  const res = await fetch(
-    "https://zooart6.yourtechnicaldomain.com/api/admin/v7/orders/orders/search",
-    {
-      method: "POST",
-      headers: {
-        "X-API-KEY": env.IDOSELL_API_KEY,
-      },
+  dateType: "add" | "modified",
+  timeoutMs = 20000
+): Promise<APIOrder[]> => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-      body: JSON.stringify({
-        params: {
-          ordersRange: {
-            ordersDateRange: {
-              ordersDateType: dateType,
-              ordersDateBegin: dateBegin,
-            },
-          },
-          resultsPage,
-          resultsLimit,
+  try {
+    const res = await fetch(
+      "https://zooart6.yourtechnicaldomain.com/api/admin/v7/orders/orders/search",
+      {
+        method: "POST",
+        headers: {
+          "X-API-KEY": env.IDOSELL_API_KEY,
         },
-      }),
-    }
-  );
 
-  const orders: APIOrder[] = (await res.json()).Results || [];
+        body: JSON.stringify({
+          params: {
+            ordersRange: {
+              ordersDateRange: {
+                ordersDateType: dateType,
+                ordersDateBegin: dateBegin,
+              },
+            },
+            resultsPage,
+            resultsLimit,
+          },
+        }),
+        signal: controller.signal,
+      }
+    );
 
-  return orders;
+    if (!res.ok)
+      throw new Error(`IdoSell returned error response: ${res.status}`);
+
+    const orders: APIOrder[] = (await res.json()).Results ?? [];
+    return orders;
+  } catch (error) {
+    console.error("Failed to fetch orders");
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const fetchOrdersWithRetryAndBackoff = async (
+  page: number,
+  limit: number,
+  begin: string,
+  type: "add" | "modified"
+): Promise<APIOrder[]> => {
+  return retryWithBackoff(() => fetchOrders(page, limit, begin, type));
 };
 
 const saveOrUpdateOrders = async (orders: APIOrder[]) => {
@@ -64,7 +109,7 @@ const saveOrUpdateOrders = async (orders: APIOrder[]) => {
     },
   }));
 
-  await OrderModel.bulkWrite(bulkOps);
+  await OrderModel.bulkWrite(bulkOps, { ordered: false });
 };
 
 export const syncOrders = async () => {
@@ -83,12 +128,16 @@ export const syncOrders = async () => {
 
   while (true) {
     const missingOrdersUpdates = (
-      await fetchOrders(resultsPage, resultsLimit, fetchDateBegin, "modified")
+      await fetchOrdersWithRetryAndBackoff(
+        resultsPage,
+        resultsLimit,
+        fetchDateBegin,
+        "modified"
+      )
     ).filter(
       (update) =>
         fetchDateBegin !== update.orderDetails.orderChangeDate ||
         update.orderId !== lastChangedOrder?._id
-      //istnieje szansa że będzie więcej niż jeden update w tej samej sekundzie o tym samym id i je odfiltruje
     );
 
     if (missingOrdersUpdates.length === 0) break;

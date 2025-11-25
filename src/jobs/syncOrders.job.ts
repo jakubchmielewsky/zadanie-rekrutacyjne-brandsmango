@@ -5,6 +5,7 @@ import { env } from "../config/env";
 export const startOrdersSyncJob = () => {
   cron.schedule(`*/${env.SYNC_INTERVAL_IN_MINUTES} * * * *`, async () => {
     try {
+      console.log("🔁 Started scheduled sync...");
       await syncOrders();
       console.log("✅ Scheduled sync completed.");
     } catch (err) {
