@@ -34,6 +34,14 @@ const handleZodError = (err: ZodError) => {
 };
 
 const sendErrorDevelopment = (err: any, req: Request, res: Response) => {
+  req.log.error(
+    {
+      error: err.message,
+      details: err,
+    },
+    "HTTP error thrown"
+  );
+
   return res.status(err.statusCode).json({
     error: err.message,
     details: err,
@@ -41,6 +49,8 @@ const sendErrorDevelopment = (err: any, req: Request, res: Response) => {
 };
 
 const sendErrorProduction = (err: any, req: Request, res: Response) => {
+  req.log.error({ err }, "Unhandled application error");
+
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       error: err.message,

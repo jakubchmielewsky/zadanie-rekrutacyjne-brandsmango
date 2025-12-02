@@ -1,5 +1,6 @@
+import { processLogger } from "./config/logger";
 process.on("uncaughtException", (err) => {
-  console.error("💥 Uncaught exception:", err);
+  processLogger.fatal({ err }, "Uncaught exception - shutting down");
   process.exit(1);
 });
 
@@ -9,23 +10,17 @@ import { env } from "./config/env";
 import { connectDB } from "./config/mongo";
 import app from "./app";
 import { startOrdersSyncJob } from "./jobs/syncOrders.job";
-import { syncOrders } from "./features/orders/order.service";
 
-connectDB().then(async () => {
-  console.log("🔁 Started initial sync...");
-  await syncOrders();
-  console.log("✅ Completed initial sync");
+connectDB().then(() => {
   startOrdersSyncJob();
 });
 
-const PORT = env.PORT || 3000;
-
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server started listening on port ${PORT}...`);
+const server = app.listen(env.PORT, () => {
+  processLogger.info(`Server started listening on port ${env.PORT}`);
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("💥 Unhandled rejection:", reason);
+  processLogger.error({ reason }, "Unhandled promise rejection");
   server.close(() => {
     process.exit(1);
   });

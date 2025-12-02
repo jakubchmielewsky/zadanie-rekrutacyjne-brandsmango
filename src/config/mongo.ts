@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { env } from "./env";
+import { dbLogger } from "./logger";
 
 export const connectDB = async () => {
   const connectionString = env.MONGO_URI.replace(
@@ -9,12 +10,12 @@ export const connectDB = async () => {
 
   try {
     await mongoose.connect(connectionString);
-    console.log("🚀 Connected to MongoDB");
+    dbLogger.info("Connected to MongoDB");
   } catch (error) {
-    console.error("💥 MongoDB connection failed:", error);
+    dbLogger.error({ error }, "MongoDB connection failed");
   }
 
   mongoose.connection.on("error", (error) => {
-    console.error("💥 MongoDB error:", error);
+    dbLogger.error({ error }, "MongoDB error");
   });
 };
