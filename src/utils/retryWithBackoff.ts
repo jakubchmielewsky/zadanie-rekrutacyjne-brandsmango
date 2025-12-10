@@ -8,14 +8,14 @@ export const retryWithBackoff = async <T>(
     try {
       return await fn();
     } catch (error) {
-      const delay = Math.pow(2, i) * 1000;
-
       externalApiLogger.error({ error }, "Fetch attempt failed");
 
       if (i === retries - 1) {
         externalApiLogger.error({ error }, "All fetch retries failed");
         throw error;
       }
+
+      const delay = Math.pow(2, i) * 1000;
       await new Promise((res) => setTimeout(res, delay));
     }
   }

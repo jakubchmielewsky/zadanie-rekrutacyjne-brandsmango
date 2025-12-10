@@ -1,11 +1,11 @@
 import OrderModel, { OrderDocument } from "./order.model";
-import { APIOrder } from "../../types/APIOrder";
 import { toApiDateFormat } from "../../utils/toApiDateFormat";
 import { AsyncParser } from "@json2csv/node";
 import { FilterQuery } from "mongoose";
 import AppError from "../../utils/AppError";
 import { externalApiLogger } from "../../config/logger";
 import { fetchOrdersWithRetryAndBackoff } from "./idosell.client";
+import { APIOrder } from "./order.types";
 
 const saveOrUpdateOrders = async (orders: APIOrder[]) => {
   const bulkOps = orders.map((order) => ({

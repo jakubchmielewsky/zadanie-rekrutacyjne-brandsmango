@@ -1,10 +1,10 @@
 import mongoose, { InferSchemaType } from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-  _id: String,
+  _id: { type: String, required: true },
   products: [
     {
-      _id: String,
+      _id: { type: Number, required: true },
       quantity: { type: Number, required: true },
     },
   ],
