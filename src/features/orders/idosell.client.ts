@@ -1,17 +1,17 @@
 import { env } from "../../config/env";
 import { externalApiLogger } from "../../config/logger";
-import { APIOrder } from "../../types/APIOrder";
+import { APIOrder, APIOrderListSchema } from "./order.types";
 import { retryWithBackoff } from "../../utils/retryWithBackoff";
 
-const fetchOrders = async (
+export const fetchOrders = async (
   resultsPage: number,
   resultsLimit: number,
   dateBegin: string,
   dateType: "add" | "modified",
   timeoutMs = 20000
 ): Promise<APIOrder[]> => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), timeoutMs);
 
   try {
     const res = await fetch(
@@ -34,15 +34,18 @@ const fetchOrders = async (
             resultsLimit,
           },
         }),
-        signal: controller.signal,
+        signal: abortController.signal,
       }
     );
 
     if (!res.ok)
       throw new Error(`IdoSell returned error response: ${res.status}`);
 
-    const orders: APIOrder[] = (await res.json()).Results ?? [];
-    return orders;
+    const rawJSON = await res.json();
+
+    const parsed = APIOrderListSchema.parse(rawJSON);
+
+    return parsed.Results ?? [];
   } catch (error) {
     externalApiLogger.error({ error }, "Failed to fetch orders");
     throw error;
