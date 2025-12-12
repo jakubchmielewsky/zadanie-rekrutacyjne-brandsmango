@@ -17,7 +17,7 @@ A backend service responsible for synchronizing orders from an external API with
 1. Install dependencies
 
 ```
-    npm install
+npm install
 ```
 
 2. Create .env file in main folder with following fields
@@ -44,4 +44,4 @@ npm run test
 
 ## Documentation
 
-http://localhost:<PORT>/docs
+http://localhost:{PORT}/docs
