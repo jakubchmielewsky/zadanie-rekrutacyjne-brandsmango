@@ -2,7 +2,6 @@ import * as OrderModelModule from "./order.model";
 import { fetchOrdersWithRetryAndBackoff } from "./idosell.client";
 import { externalApiLogger } from "../../config/logger";
 import { syncOrders } from "./order.service";
-import { toApiDateFormat } from "../../utils/toApiDateFormat";
 
 const OrderModel = OrderModelModule.default as jest.Mocked<
   typeof OrderModelModule.default
