@@ -13,7 +13,7 @@ const orderSchema = new mongoose.Schema({
   orderChangeDate: { type: Date, required: true },
 });
 
-orderSchema.index({ totalWort: 1, orderChangeDate: -1 });
+orderSchema.index({ totalWorth: 1, orderChangeDate: -1 });
 
 export type OrderDocument = InferSchemaType<typeof orderSchema>;
 
