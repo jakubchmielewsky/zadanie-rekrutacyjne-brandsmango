@@ -74,17 +74,17 @@ export const syncOrders = async () => {
   externalApiLogger.info(`Synced (${updatesInTotal} orders updated in total)`);
 };
 
-export const getOrders = async (filter: FilterQuery<OrderDocument>) => {
+export const findOrders = async (filter: FilterQuery<OrderDocument>) => {
   return await OrderModel.find(filter).select("-orderChangeDate").lean();
 };
 
-export const getOrdersAsCSV = (filter: FilterQuery<OrderDocument>) => {
+export const streamOrdersAsCSV = (filter: FilterQuery<OrderDocument>) => {
   const cursor = OrderModel.find(filter)
     .lean()
     .select("-orderChangeDate")
     .cursor();
 
-  const parser = new AsyncParser({
+  const CSVParser = new AsyncParser({
     fields: [
       {
         label: "Order ID",
@@ -106,10 +106,10 @@ export const getOrdersAsCSV = (filter: FilterQuery<OrderDocument>) => {
     ],
   });
 
-  return parser.parse(cursor);
+  return CSVParser.parse(cursor);
 };
 
-export const getOrderById = async (orderId: string) => {
+export const findOrderById = async (orderId: string) => {
   const order = await OrderModel.findById(orderId)
     .select("-orderChangeDate")
     .lean();

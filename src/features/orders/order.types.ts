@@ -12,25 +12,29 @@ export const OrderSchema = z.object({
   orderStatus: z.string(),
 });
 
-export const GetOrdersQuerySchema = z.object({
-  minWorth: z
-    .string()
-    .transform(Number)
-    .refine((v) => !isNaN(v), { message: "minWorth must be a number" })
-    .optional(),
-  maxWorth: z
-    .string()
-    .transform(Number)
-    .refine((v) => !isNaN(v), { message: "maxWorth must be a number" })
-    .optional(),
-});
+export const GetOrdersQuerySchema = z
+  .object({
+    minWorth: z
+      .string()
+      .transform(Number)
+      .refine((v) => !isNaN(v), { message: "minWorth must be a number" })
+      .optional(),
+    maxWorth: z
+      .string()
+      .transform(Number)
+      .refine((v) => !isNaN(v), { message: "maxWorth must be a number" })
+      .optional(),
+  })
+  .strict();
 
-export const GetOrderByIdParamsSchema = z.object({
-  orderId: z.string(),
-});
+export const GetOrderByIdParamsSchema = z
+  .object({
+    orderId: z.string(),
+  })
+  .strict();
 
 export const GetOrdersHeadersSchema = z.object({
-  Accept: z.enum(["application/json", "text/csv"]).optional(),
+  accept: z.enum(["application/json", "text/csv"]).optional(),
 });
 
 export const APIOrderSchema = z.object({
