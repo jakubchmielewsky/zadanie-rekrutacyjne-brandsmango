@@ -5,7 +5,7 @@ A backend service responsible for synchronizing orders from an external API with
 ## Used technologies:
 
 - Node.js + TS
-- Express.js 4
+- Express.js 5
 - MongoDB + Mongoose
 - Zod + zod-to-openapi
 - Pino

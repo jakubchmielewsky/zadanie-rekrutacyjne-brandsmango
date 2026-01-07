@@ -28,7 +28,7 @@ const devTransport = {
 export const logger = pino(
   {
     level: isProd ? "info" : "debug",
-    transport: isProd ? undefined : devTransport,
+    ...(isProd ? {} : { transport: devTransport }),
   },
   isProd ? prodDestination : undefined
 );

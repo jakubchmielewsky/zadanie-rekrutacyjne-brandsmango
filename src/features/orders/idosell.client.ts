@@ -20,6 +20,7 @@ export const fetchOrders = async (
         method: "POST",
         headers: {
           "X-API-KEY": env.IDOSELL_API_KEY,
+          "Content-Type": "application/json",
         },
 
         body: JSON.stringify({
